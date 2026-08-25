@@ -1,0 +1,14 @@
+const KEY="linkly_links_v1",THEME="linkly_theme_v1";let links=load();
+const $=id=>document.getElementById(id);
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x:[]}catch{return[]}}
+function save(){localStorage.setItem(KEY,JSON.stringify(links))}
+function id(){return Math.random().toString(36).slice(2,8)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function validUrl(value){try{const u=new URL(value);return ["http:","https:"].includes(u.protocol)}catch{return false}}
+function render(){const list=$("linkList");list.innerHTML="";$("linkCount").textContent=`${links.length} ${links.length===1?"link":"links"}`;$("empty").style.display=links.length?"none":"block";links.forEach(l=>{const row=document.createElement("article");row.className="link-row";row.innerHTML=`<div><a class="short" href="${esc(l.original)}" target="_blank" rel="noopener" title="${esc(l.original)}">${esc(l.short)}</a><div class="long" title="${esc(l.original)}">${esc(l.original)}</div></div><div class="clicks">${l.clicks||0} ${l.clicks===1?"click":"clicks"}</div><button class="delete" aria-label="Delete link">×</button>`;row.querySelector(".short").onclick=()=>{l.clicks=(l.clicks||0)+1;save()};row.querySelector(".delete").onclick=()=>del(l.id);list.appendChild(row)})}
+function del(id){if(confirm("Delete this shortened link?")){links=links.filter(x=>x.id!==id);save();render();toast("Link deleted.")}}
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),2300)}
+$("shortenForm").onsubmit=e=>{e.preventDefault();$("urlError").textContent="";let value=$("url").value.trim();if(!validUrl(value)){$("urlError").textContent="Enter a valid http:// or https:// URL.";return}let code=id(),short=`linkly.local/${code}`;let item={id:code,original:value,short,clicks:0,created:Date.now()};links.unshift(item);save();render();$("shortLink").textContent=short;$("shortLink").href=value;$("result").hidden=false;$("url").value="";toast("Short link created.");$("links").scrollIntoView({behavior:"smooth",block:"start"})};
+$("copyResult").onclick=async()=>{try{await navigator.clipboard.writeText($("shortLink").textContent);toast("Short link copied.")}catch{toast("Copy failed — select the link manually.")}};
+$("theme").onclick=()=>{document.body.classList.toggle("dark");let d=document.body.classList.contains("dark");localStorage.setItem(THEME,d?"dark":"light");$("theme").textContent=d?"☀":"☾"};
+if(localStorage.getItem(THEME)==="dark"){document.body.classList.add("dark");$("theme").textContent="☀"}render();
