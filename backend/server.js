@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
-import { supabase } from './lib/supabase.js';
+import { pool } from './lib/db.js';
 import { encodeBase62 } from './lib/base62.js';
 
 const app = express();
@@ -19,6 +19,17 @@ function isValidUrl(value) {
   }
 }
 
+function toLinkResponse(row) {
+  return {
+    id: row.id,
+    code: row.code,
+    shortUrl: `${PUBLIC_BASE_URL}/${row.code}`,
+    destinationUrl: row.destination_url,
+    clicks: row.clicks,
+    createdAt: row.created_at,
+  };
+}
+
 // POST /api/links -> create a short link
 // Two-step insert: we need the row's auto-incrementing `id` before we
 // can base62-encode it into a code, so insert first (code left null),
@@ -30,83 +41,63 @@ app.post('/api/links', async (req, res) => {
     return res.status(400).json({ error: 'A valid http(s) URL is required' });
   }
 
-  const { data: inserted, error: insertError } = await supabase
-    .from('links')
-    .insert({ destination_url: destinationUrl })
-    .select('id')
-    .single();
+  try {
+    const insertResult = await pool.query(
+      'insert into links (destination_url) values ($1) returning id',
+      [destinationUrl]
+    );
+    const id = insertResult.rows[0].id;
+    const code = encodeBase62(id);
 
-  if (insertError) return res.status(500).json({ error: insertError.message });
+    const updateResult = await pool.query(
+      'update links set code = $1 where id = $2 returning *',
+      [code, id]
+    );
 
-  const code = encodeBase62(inserted.id);
-
-  const { data: updated, error: updateError } = await supabase
-    .from('links')
-    .update({ code })
-    .eq('id', inserted.id)
-    .select()
-    .single();
-
-  if (updateError) return res.status(500).json({ error: updateError.message });
-
-  res.status(201).json({
-    id: updated.id,
-    code: updated.code,
-    shortUrl: `${PUBLIC_BASE_URL}/${updated.code}`,
-    destinationUrl: updated.destination_url,
-    clicks: updated.clicks,
-    createdAt: updated.created_at,
-  });
+    res.status(201).json(toLinkResponse(updateResult.rows[0]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/links -> list all links, newest first
 app.get('/api/links', async (req, res) => {
-  const { data, error } = await supabase
-    .from('links')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) return res.status(500).json({ error: error.message });
-
-  res.json(
-    data.map((row) => ({
-      id: row.id,
-      code: row.code,
-      shortUrl: `${PUBLIC_BASE_URL}/${row.code}`,
-      destinationUrl: row.destination_url,
-      clicks: row.clicks,
-      createdAt: row.created_at,
-    }))
-  );
+  try {
+    const result = await pool.query('select * from links order by created_at desc');
+    res.json(result.rows.map(toLinkResponse));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // DELETE /api/links/:id
 app.delete('/api/links/:id', async (req, res) => {
-  const { error } = await supabase.from('links').delete().eq('id', req.params.id);
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true });
+  try {
+    await pool.query('delete from links where id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// GET /:code -> the actual short-link redirect. This is the route that
-// makes it a real URL shortener rather than a UI mockup: anyone,
-// anywhere, hitting PUBLIC_BASE_URL/:code gets sent to the original URL.
-// Registered LAST so it doesn't swallow /api/* routes above it.
+// GET /:code -> the actual short-link redirect. Registered LAST so it
+// doesn't swallow /api/* routes above it.
 app.get('/:code', async (req, res) => {
   const { code } = req.params;
 
-  const { data, error } = await supabase.from('links').select('*').eq('code', code).maybeSingle();
+  try {
+    const result = await pool.query('select * from links where code = $1', [code]);
+    const link = result.rows[0];
 
-  if (error) return res.status(500).send('Something went wrong');
-  if (!data) return res.status(404).send('Short link not found');
+    if (!link) return res.status(404).send('Short link not found');
 
-  // Fire-and-forget click increment — don't make the redirect wait on it.
-  supabase
-    .from('links')
-    .update({ clicks: data.clicks + 1 })
-    .eq('id', data.id)
-    .then(() => {});
+    // Fire-and-forget click increment — don't make the redirect wait on it.
+    pool.query('update links set clicks = clicks + 1 where id = $1', [link.id]).catch(() => {});
 
-  res.redirect(302, data.destination_url);
+    res.redirect(302, link.destination_url);
+  } catch (err) {
+    res.status(500).send('Something went wrong');
+  }
 });
 
 const port = process.env.PORT || 3001;
