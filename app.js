@@ -1,14 +1,122 @@
-const KEY="linkly_links_v1",THEME="linkly_theme_v1";let links=load();
-const $=id=>document.getElementById(id);
-function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x:[]}catch{return[]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(links))}
-function id(){return Math.random().toString(36).slice(2,8)}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function validUrl(value){try{const u=new URL(value);return ["http:","https:"].includes(u.protocol)}catch{return false}}
-function render(){const list=$("linkList");list.innerHTML="";$("linkCount").textContent=`${links.length} ${links.length===1?"link":"links"}`;$("empty").style.display=links.length?"none":"block";links.forEach(l=>{const row=document.createElement("article");row.className="link-row";row.innerHTML=`<div><a class="short" href="${esc(l.original)}" target="_blank" rel="noopener" title="${esc(l.original)}">${esc(l.short)}</a><div class="long" title="${esc(l.original)}">${esc(l.original)}</div></div><div class="clicks">${l.clicks||0} ${l.clicks===1?"click":"clicks"}</div><button class="delete" aria-label="Delete link">×</button>`;row.querySelector(".short").onclick=()=>{l.clicks=(l.clicks||0)+1;save()};row.querySelector(".delete").onclick=()=>del(l.id);list.appendChild(row)})}
-function del(id){if(confirm("Delete this shortened link?")){links=links.filter(x=>x.id!==id);save();render();toast("Link deleted.")}}
-function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),2300)}
-$("shortenForm").onsubmit=e=>{e.preventDefault();$("urlError").textContent="";let value=$("url").value.trim();if(!validUrl(value)){$("urlError").textContent="Enter a valid http:// or https:// URL.";return}let code=id(),short=`linkly.local/${code}`;let item={id:code,original:value,short,clicks:0,created:Date.now()};links.unshift(item);save();render();$("shortLink").textContent=short;$("shortLink").href=value;$("result").hidden=false;$("url").value="";toast("Short link created.");$("links").scrollIntoView({behavior:"smooth",block:"start"})};
-$("copyResult").onclick=async()=>{try{await navigator.clipboard.writeText($("shortLink").textContent);toast("Short link copied.")}catch{toast("Copy failed — select the link manually.")}};
-$("theme").onclick=()=>{document.body.classList.toggle("dark");let d=document.body.classList.contains("dark");localStorage.setItem(THEME,d?"dark":"light");$("theme").textContent=d?"☀":"☾"};
-if(localStorage.getItem(THEME)==="dark"){document.body.classList.add("dark");$("theme").textContent="☀"}render();
+// Point this at wherever backend/server.js is running.
+// Local dev: http://localhost:3001
+// Deployed: swap for your Render/Railway/Fly URL after deploying the backend.
+const API_BASE = 'http://localhost:3001';
+
+const form = document.getElementById('shortenForm');
+const urlInput = document.getElementById('url');
+const urlError = document.getElementById('urlError');
+const resultBox = document.getElementById('result');
+const shortLinkEl = document.getElementById('shortLink');
+const copyResultBtn = document.getElementById('copyResult');
+const linkList = document.getElementById('linkList');
+const emptyState = document.getElementById('empty');
+const linkCountEl = document.getElementById('linkCount');
+const toastEl = document.getElementById('toast');
+
+let toastTimer = null;
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+}
+
+function showError(message) {
+  urlError.textContent = message || '';
+}
+
+async function loadLinks() {
+  try {
+    const res = await fetch(`${API_BASE}/api/links`);
+    if (!res.ok) throw new Error('Failed to load links');
+    renderLinks(await res.json());
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+function renderLinks(links) {
+  linkList.innerHTML = '';
+  linkCountEl.textContent = `${links.length} link${links.length === 1 ? '' : 's'}`;
+
+  if (links.length === 0) {
+    emptyState.hidden = false;
+    return;
+  }
+  emptyState.hidden = true;
+
+  for (const link of links) {
+    const item = document.createElement('div');
+    item.className = 'link-item';
+    item.innerHTML = `
+      <div class="link-info">
+        <a href="${link.shortUrl}" target="_blank" rel="noopener" class="short-url">${link.shortUrl}</a>
+        <p class="destination">${link.destinationUrl}</p>
+        <p class="clicks">${link.clicks} click${link.clicks === 1 ? '' : 's'}</p>
+      </div>
+      <div class="link-actions">
+        <button data-copy="${link.shortUrl}" class="secondary" type="button">Copy</button>
+        <button data-delete="${link.id}" class="secondary" type="button">Delete</button>
+      </div>
+    `;
+    linkList.appendChild(item);
+  }
+
+  linkList.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(btn.dataset.copy);
+      showToast('Copied to clipboard');
+    });
+  });
+
+  linkList.querySelectorAll('[data-delete]').forEach((btn) => {
+    btn.addEventListener('click', () => deleteLink(btn.dataset.delete));
+  });
+}
+
+async function deleteLink(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/links/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete link');
+    await loadLinks();
+    showToast('Link deleted');
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+copyResultBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(shortLinkEl.href);
+  showToast('Copied to clipboard');
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  showError('');
+  resultBox.hidden = true;
+
+  const destinationUrl = urlInput.value.trim();
+  if (!destinationUrl) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/links`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destinationUrl }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to shorten URL');
+
+    shortLinkEl.href = data.shortUrl;
+    shortLinkEl.textContent = data.shortUrl;
+    resultBox.hidden = false;
+
+    urlInput.value = '';
+    await loadLinks();
+  } catch (err) {
+    showError(err.message);
+  }
+});
+
+loadLinks();
