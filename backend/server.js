@@ -50,7 +50,7 @@ app.get('/', (_req, res) => {
 
 // POST /api/links -> create a short link
 app.post('/api/links', async (req, res) => {
-  const { destinationUrl } = req.body;
+  const { destinationUrl, customAlias } = req.body;
 
   if (
     typeof destinationUrl !== 'string' ||
@@ -63,10 +63,29 @@ app.post('/api/links', async (req, res) => {
     });
   }
 
+  let codeToUse = null;
+  if (customAlias && typeof customAlias === 'string') {
+    const trimmed = customAlias.trim();
+    if (!/^[a-zA-Z0-9_-]{3,30}$/.test(trimmed)) {
+      return res.status(400).json({
+        error: 'Custom alias must be 3-30 alphanumeric characters, hyphens, or underscores',
+      });
+    }
+    codeToUse = trimmed;
+  }
+
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
+
+    if (codeToUse) {
+      const existing = await client.query('SELECT id FROM links WHERE code = $1', [codeToUse]);
+      if (existing.rows.length > 0) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ error: 'Custom alias is already in use' });
+      }
+    }
 
     const insertResult = await client.query(
       'INSERT INTO links (destination_url) VALUES ($1) RETURNING id',
@@ -74,11 +93,11 @@ app.post('/api/links', async (req, res) => {
     );
 
     const id = insertResult.rows[0].id;
-    const code = encodeBase62(Number(id));
+    const finalCode = codeToUse || encodeBase62(Number(id));
 
     const updateResult = await client.query(
       'UPDATE links SET code = $1 WHERE id = $2 RETURNING *',
-      [code, id]
+      [finalCode, id]
     );
 
     if (updateResult.rows.length === 0) {

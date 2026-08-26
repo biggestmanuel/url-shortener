@@ -3,106 +3,571 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Linkly — a simple, fast URL shortener with link management and click analytics.">
-  <meta name="theme-color" content="#0b0f19">
-  <title>Linkly — URL Shortener</title>
+  <meta name="description" content="Linkly — Modern, lightning-fast URL shortener with instant QR codes, real-time click tracking, and clean link analytics.">
+  <meta name="theme-color" content="#090d16">
+  <title>Linkly — Next-Gen URL Shortener & Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="dark">
+  <!-- Ambient background lighting -->
+  <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+  <div class="bg-grid-overlay" aria-hidden="true"></div>
+
+  <!-- Header / Navigation -->
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Linkly home">
-      <span class="logo">L</span>
-      <span>Linkly</span>
-    </a>
-    <nav>
-      <a href="#links">Your links</a>
-      <a href="#how">How it works</a>
-      <button id="theme" class="icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme">☾</button>
-    </nav>
+    <div class="topbar-inner">
+      <a class="brand" href="#" aria-label="Linkly Home">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </div>
+        <span class="brand-text">Linkly<span class="brand-dot">.</span></span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#shorten" class="nav-link active">Shorten</a>
+        <a href="#analytics" class="nav-link">Analytics</a>
+        <a href="#links" class="nav-link">Dashboard</a>
+        <a href="#features" class="nav-link">Features</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <div id="backendStatus" class="status-pill status-checking" title="Backend Connection Status">
+          <span class="status-indicator"></span>
+          <span class="status-text">Connecting...</span>
+        </div>
+
+        <button id="theme" class="icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <a href="https://github.com/biggestmanuel/url-shortener" target="_blank" rel="noopener noreferrer" class="icon-btn github-btn" aria-label="View on GitHub" title="View Source on GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="hero-glow glow-one"></div>
-      <div class="hero-glow glow-two"></div>
-      <div class="hero-inner">
-        <div class="eyebrow"><span></span> SIMPLE LINK MANAGEMENT</div>
-        <h1>Long link.<br><span>Short story.</span></h1>
-        <p class="sub">Turn long URLs into clean, shareable links. Keep everything organized and see how often your links get clicked.</p>
+    <!-- Hero / Shortener Section -->
+    <section class="hero-section" id="shorten">
+      <div class="hero-container">
+        <div class="hero-badge">
+          <span class="badge-sparkle">✨</span>
+          <span>Fast, Reliable & Modern Link Shortener</span>
+        </div>
 
-        <form id="shortenForm" class="shorten-form" novalidate>
-          <label class="sr-only" for="url">Long URL</label>
-          <input id="url" type="url" placeholder="https://example.com/your-very-long-link" autocomplete="url" inputmode="url" required>
-          <button id="shortenBtn" class="primary" type="submit">
-            <span class="btn-label">Shorten URL</span>
-            <span class="spinner" aria-hidden="true"></span>
-          </button>
-        </form>
-        <p id="urlError" class="error" role="alert"></p>
+        <h1 class="hero-title">
+          Shorter links.<br>
+          <span class="gradient-text">Supercharged results.</span>
+        </h1>
 
-        <div id="result" class="result" hidden>
-          <div class="result-main">
-            <span class="result-label">YOUR SHORT LINK</span>
-            <a id="shortLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+        <p class="hero-subtitle">
+          Transform long, cluttered URLs into clean, memorable links. Track clicks in real-time, generate instant QR codes, and share everywhere effortlessly.
+        </p>
+
+        <!-- Shorten Input Card -->
+        <div class="shorten-card">
+          <form id="shortenForm" class="shorten-form" novalidate>
+            <div class="input-row">
+              <div class="input-wrapper">
+                <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                <label class="sr-only" for="url">Destination URL</label>
+                <input id="url" type="url" placeholder="Paste your long link here (https://...)" autocomplete="off" spellcheck="false" inputmode="url" required>
+                <button id="pasteBtn" type="button" class="paste-btn" title="Paste from clipboard">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  </svg>
+                  <span>Paste</span>
+                </button>
+              </div>
+
+              <button id="shortenBtn" class="btn-primary" type="submit">
+                <span class="btn-text">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="13 17 18 12 13 7"></polyline>
+                    <polyline points="6 17 11 12 6 7"></polyline>
+                  </svg>
+                  Shorten Link
+                </span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <!-- Expandable Custom Alias -->
+            <div class="custom-options">
+              <button type="button" id="toggleAliasBtn" class="alias-toggle-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Customize link alias (optional)</span>
+                <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+
+              <div id="aliasDrawer" class="alias-drawer" hidden>
+                <div class="alias-input-group">
+                  <span class="alias-prefix">linkly/</span>
+                  <input id="customAlias" type="text" placeholder="my-custom-slug" maxlength="30" autocomplete="off" spellcheck="false">
+                </div>
+                <span class="alias-hint">Letters, numbers, hyphens and underscores only (3-30 chars).</span>
+              </div>
+            </div>
+          </form>
+
+          <div id="urlError" class="form-alert error-alert" role="alert" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span id="errorMessage">Please enter a valid URL.</span>
           </div>
-          <button id="copyResult" class="secondary" type="button">Copy</button>
+
+          <!-- Active Result Box -->
+          <div id="result" class="result-box" hidden>
+            <div class="result-header">
+              <span class="result-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Link Ready!
+              </span>
+              <span class="result-time">Just now</span>
+            </div>
+
+            <div class="result-body">
+              <div class="result-link-wrapper">
+                <span class="result-url-text" id="shortLink"></span>
+              </div>
+
+              <div class="result-actions">
+                <button id="copyResult" class="btn-action btn-copy" type="button">
+                  <svg class="icon-copy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <svg class="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span class="copy-text">Copy</span>
+                </button>
+
+                <button id="qrResultBtn" class="btn-action" type="button" title="View QR Code">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                  <span>QR Code</span>
+                </button>
+
+                <button id="shareResultBtn" class="btn-action" type="button" title="Share Link">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  <span>Share</span>
+                </button>
+
+                <a id="visitResultBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn-action" title="Test short link in new tab">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  <span>Visit</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- Analytics Stats Section -->
+    <section class="container stats-section" id="analytics">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Links</span>
+            <strong id="statTotalLinks" class="stat-value">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Clicks</span>
+            <strong id="statTotalClicks" class="stat-value">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34c-1.22-.6-2-1.85-2-3.32a3.66 3.66 0 0 1 3.66-3.66h8.68A3.66 3.66 0 0 1 20 11.34c0 1.47-.78 2.72-2 3.32V17c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-2.34"></path>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Top Link Clicks</span>
+            <strong id="statTopClicks" class="stat-value">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper orange">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Avg Clicks / Link</span>
+            <strong id="statAvgClicks" class="stat-value">0.0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Links Dashboard Section -->
     <section class="container links-section" id="links">
       <div class="section-head">
-        <div>
-          <p class="eyebrow">YOUR LINKS</p>
-          <h2>Recent links</h2>
+        <div class="section-title-wrap">
+          <div class="section-eyebrow">
+            <span class="dot-live"></span>
+            <span>LINK REPOSITORY</span>
+          </div>
+          <div class="title-with-badge">
+            <h2>Recent Links</h2>
+            <span id="linkCount" class="badge-count">0 links</span>
+          </div>
         </div>
-        <span id="linkCount" class="count">0 links</span>
+
+        <!-- Dashboard Controls: Search, Sort, Export -->
+        <div class="dashboard-controls">
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search links or URLs..." autocomplete="off">
+            <button id="clearSearchBtn" class="clear-search-btn" type="button" title="Clear search" hidden>×</button>
+          </div>
+
+          <div class="sort-select-wrapper">
+            <select id="sortSelect" class="sort-select" aria-label="Sort links">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="clicks-desc">Most clicks</option>
+              <option value="clicks-asc">Fewest clicks</option>
+            </select>
+          </div>
+
+          <div class="dropdown-wrapper">
+            <button id="exportBtn" class="btn-secondary" type="button" title="Export link data">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export</span>
+            </button>
+            <div id="exportMenu" class="dropdown-menu" hidden>
+              <button type="button" id="exportCsvBtn" class="dropdown-item">Export as CSV</button>
+              <button type="button" id="exportJsonBtn" class="dropdown-item">Export as JSON</button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div id="loading" class="loading" hidden>
-        <span class="loading-dot"></span>
-        Loading links…
+      <!-- Skeleton / Loading State -->
+      <div id="loading" class="skeleton-container" hidden>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
       </div>
 
+      <!-- Link Cards List -->
       <div id="linkList" class="link-list"></div>
 
-      <div id="empty" class="empty">
-        <div class="empty-icon">↗</div>
-        <h3>No links yet</h3>
-        <p>Your shortened links will appear here. Create one above to get started.</p>
+      <!-- Empty State -->
+      <div id="empty" class="empty-state">
+        <div class="empty-illustration">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </div>
+        <h3>No shortened links yet</h3>
+        <p>Your created links will appear here with live click tracking, QR codes, and export tools.</p>
+        <button type="button" class="btn-primary btn-sm mt-3" onclick="document.getElementById('url').focus()">
+          Shorten your first link
+        </button>
+      </div>
+
+      <!-- No Search Results State -->
+      <div id="noResults" class="empty-state" hidden>
+        <div class="empty-illustration">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+        <h3>No matching links found</h3>
+        <p>Try searching for a different domain, short code, or clear the search filter.</p>
+        <button id="resetSearchBtn" type="button" class="btn-secondary btn-sm mt-3">Clear search filter</button>
       </div>
     </section>
 
-    <section class="features" id="how">
+    <!-- Features Grid Section -->
+    <section class="features-section" id="features">
       <div class="container">
-        <p class="eyebrow">WHY LINKLY</p>
+        <div class="features-header text-center">
+          <span class="section-eyebrow">BUILT FOR SPEED & SIMPLICITY</span>
+          <h2>Everything you need for link management</h2>
+          <p class="features-sub">Optimized for developers, marketers, creators, and teams.</p>
+        </div>
+
         <div class="feature-grid">
-          <article>
-            <div class="feature-icon">⚡</div>
-            <h3>Fast</h3>
-            <p>Get a clean short link in seconds, without unnecessary steps.</p>
-          </article>
-          <article>
-            <div class="feature-icon">▣</div>
-            <h3>Organized</h3>
-            <p>Keep your latest links in one simple, persistent dashboard.</p>
-          </article>
-          <article>
-            <div class="feature-icon">↗</div>
-            <h3>Trackable</h3>
-            <p>See how many times each short link has been clicked.</p>
-          </article>
+          <div class="feature-card">
+            <div class="feature-icon-box cyan">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <h3>Instant Redirection</h3>
+            <p>High performance base62 encoded short links with lightning fast 302 redirects and resilient caching.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box purple">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </div>
+            <h3>High-Res QR Codes</h3>
+            <p>Generate downloadable high-resolution QR codes in PNG and SVG formats for print, presentations, and flyers.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <h3>Real-Time Analytics</h3>
+            <p>Live click counters and aggregate performance metrics to see how your campaigns and links perform.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box orange">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <h3>Smart Local & Cloud Fallback</h3>
+            <p>Works flawlessly online with PostgreSQL/Neon backend or in offline demo mode with local storage persistence.</p>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <span>© 2026 Linkly</span>
-    <span>Simple links. Less clutter.</span>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <span class="footer-brand">Linkly</span>
+        <span class="footer-sep">·</span>
+        <span>© 2026 Linkly. All rights reserved.</span>
+      </div>
+      <div class="footer-shortcuts">
+        <span><kbd>/</kbd> to focus input</span>
+        <span><kbd>Esc</kbd> to close modals</span>
+      </div>
+    </div>
   </footer>
 
-  <div id="toast" class="toast" aria-live="polite"></div>
+  <!-- Modal: QR Code Preview & Download -->
+  <div id="qrModal" class="modal-backdrop" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </div>
+          <h3>QR Code Generator</h3>
+        </div>
+        <button id="closeQrModal" class="modal-close-btn" type="button" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-body text-center">
+        <div class="qr-preview-wrapper">
+          <canvas id="qrCanvas" class="qr-canvas" width="220" height="220"></canvas>
+        </div>
+        <p class="qr-modal-url" id="qrModalUrl"></p>
+        <p class="qr-modal-hint">Scan with any mobile camera or QR reader.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button id="downloadQrBtn" class="btn-primary w-full" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download PNG Image
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Share Link -->
+  <div id="shareModal" class="modal-backdrop" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </div>
+          <h3>Share Short Link</h3>
+        </div>
+        <button id="closeShareModal" class="modal-close-btn" type="button" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="share-url-box">
+          <input type="text" id="shareModalUrlInput" readonly>
+          <button type="button" id="shareModalCopyBtn" class="btn-primary btn-sm">Copy</button>
+        </div>
+
+        <div class="social-share-grid">
+          <button type="button" class="social-btn x-btn" id="shareXBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <span>X (Twitter)</span>
+          </button>
+          <button type="button" class="social-btn whatsapp-btn" id="shareWaBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 0 1-5.82 2.41h-.01c-1.42 0-2.82-.37-4.04-1.08l-.29-.17-3.11.82.83-3.03-.19-.3a8.216 8.216 0 0 1-1.26-4.39c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.98-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.12-.22-.19-.47-.32"/>
+            </svg>
+            <span>WhatsApp</span>
+          </button>
+          <button type="button" class="social-btn linkedin-btn" id="shareInBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+            </svg>
+            <span>LinkedIn</span>
+          </button>
+          <button type="button" class="social-btn telegram-btn" id="shareTgBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.943z"/>
+            </svg>
+            <span>Telegram</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Delete Confirmation -->
+  <div id="deleteModal" class="modal-backdrop" hidden>
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-box danger-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </div>
+          <h3>Delete Link</h3>
+        </div>
+        <button id="closeDeleteModal" class="modal-close-btn" type="button" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Are you sure you want to permanently delete this shortened link?</p>
+        <p class="delete-link-preview" id="deleteModalTarget"></p>
+      </div>
+
+      <div class="modal-footer modal-footer-split">
+        <button id="cancelDeleteBtn" class="btn-secondary" type="button">Cancel</button>
+        <button id="confirmDeleteBtn" class="btn-danger" type="button">Delete Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- App Script -->
   <script src="app.js"></script>
 </body>
 </html>
