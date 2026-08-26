@@ -4,68 +4,105 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Linkly — a simple, fast URL shortener with link management and click analytics.">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#0b0f19">
   <title>Linkly — URL Shortener</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="topbar">
-  <a class="brand" href="#"><span class="logo">L</span> Linkly</a>
-  <nav><a href="#how">How it works</a><button id="theme" class="icon" aria-label="Toggle theme">☾</button></nav>
-</header>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Linkly home">
+      <span class="logo">L</span>
+      <span>Linkly</span>
+    </a>
+    <nav>
+      <a href="#links">Your links</a>
+      <a href="#how">How it works</a>
+      <button id="theme" class="icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme">☾</button>
+    </nav>
+  </header>
 
-<main>
-  <section class="hero">
-    <div class="hero-inner">
-      <p class="eyebrow">SIMPLE LINK MANAGEMENT</p>
-      <h1>Long link.<br><span>Short story.</span></h1>
-      <p class="sub">Turn long URLs into clean, shareable links. Keep your links organized and see how often they get clicked.</p>
+  <main>
+    <section class="hero">
+      <div class="hero-glow glow-one"></div>
+      <div class="hero-glow glow-two"></div>
+      <div class="hero-inner">
+        <div class="eyebrow"><span></span> SIMPLE LINK MANAGEMENT</div>
+        <h1>Long link.<br><span>Short story.</span></h1>
+        <p class="sub">Turn long URLs into clean, shareable links. Keep everything organized and see how often your links get clicked.</p>
 
-      <form id="shortenForm" class="shorten-form">
-        <label class="sr-only" for="url">Long URL</label>
-        <input id="url" type="url" placeholder="https://example.com/your-very-long-link" autocomplete="url" required>
-        <button class="primary" type="submit">Shorten URL</button>
-      </form>
-      <small id="urlError" class="error"></small>
+        <form id="shortenForm" class="shorten-form" novalidate>
+          <label class="sr-only" for="url">Long URL</label>
+          <input id="url" type="url" placeholder="https://example.com/your-very-long-link" autocomplete="url" inputmode="url" required>
+          <button id="shortenBtn" class="primary" type="submit">
+            <span class="btn-label">Shorten URL</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+        <p id="urlError" class="error" role="alert"></p>
 
-      <div id="result" class="result" hidden>
-        <div>
-          <span>YOUR SHORT LINK</span>
-          <a id="shortLink" href="#" target="_blank" rel="noopener"></a>
+        <div id="result" class="result" hidden>
+          <div class="result-main">
+            <span class="result-label">YOUR SHORT LINK</span>
+            <a id="shortLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+          </div>
+          <button id="copyResult" class="secondary" type="button">Copy</button>
         </div>
-        <button id="copyResult" class="secondary" type="button">Copy</button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="container" id="links">
-    <div class="section-head">
-      <div><p class="eyebrow">YOUR LINKS</p><h2>Recent links</h2></div>
-      <span id="linkCount" class="count">0 links</span>
-    </div>
-    <div id="linkList" class="link-list"></div>
-    <div id="empty" class="empty">
-      <div class="empty-icon">↗</div>
-      <h3>No links yet</h3>
-      <p>Your shortened links will appear here. Create one above to get started.</p>
-    </div>
-  </section>
-
-  <section class="features" id="how">
-    <div class="container">
-      <p class="eyebrow">WHY LINKLY</p>
-      <div class="feature-grid">
-        <article><div class="feature-icon">⚡</div><h3>Fast</h3><p>Get a clean short link in seconds, without unnecessary steps.</p></article>
-        <article><div class="feature-icon">▣</div><h3>Organized</h3><p>Keep the links you've created in one simple dashboard.</p></article>
-        <article><div class="feature-icon">↗</div><h3>Trackable</h3><p>See click counts for your links when you're ready to connect a backend.</p></article>
+    <section class="container links-section" id="links">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">YOUR LINKS</p>
+          <h2>Recent links</h2>
+        </div>
+        <span id="linkCount" class="count">0 links</span>
       </div>
-    </div>
-  </section>
-</main>
 
-<footer><span>© 2026 Linkly</span><span>Simple links. Less clutter.</span></footer>
+      <div id="loading" class="loading" hidden>
+        <span class="loading-dot"></span>
+        Loading links…
+      </div>
 
-<div id="toast" class="toast" aria-live="polite"></div>
-<script src="app.js"></script>
+      <div id="linkList" class="link-list"></div>
+
+      <div id="empty" class="empty">
+        <div class="empty-icon">↗</div>
+        <h3>No links yet</h3>
+        <p>Your shortened links will appear here. Create one above to get started.</p>
+      </div>
+    </section>
+
+    <section class="features" id="how">
+      <div class="container">
+        <p class="eyebrow">WHY LINKLY</p>
+        <div class="feature-grid">
+          <article>
+            <div class="feature-icon">⚡</div>
+            <h3>Fast</h3>
+            <p>Get a clean short link in seconds, without unnecessary steps.</p>
+          </article>
+          <article>
+            <div class="feature-icon">▣</div>
+            <h3>Organized</h3>
+            <p>Keep your latest links in one simple, persistent dashboard.</p>
+          </article>
+          <article>
+            <div class="feature-icon">↗</div>
+            <h3>Trackable</h3>
+            <p>See how many times each short link has been clicked.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 Linkly</span>
+    <span>Simple links. Less clutter.</span>
+  </footer>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="app.js"></script>
 </body>
 </html>

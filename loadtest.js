@@ -2,9 +2,8 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Trend, Rate } from 'k6/metrics';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:3001';
 
-// Separate performance metrics for each Linkly operation.
 const listDuration = new Trend('link_list_duration');
 const createDuration = new Trend('link_create_duration');
 const redirectDuration = new Trend('link_redirect_duration');
@@ -20,28 +19,20 @@ export const options = {
     { duration: '10s', target: 1000 },
     { duration: '10s', target: 0 },
   ],
-
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<1000'],
-
     link_list_duration: ['p(95)<1000'],
     link_create_duration: ['p(95)<1000'],
     link_redirect_duration: ['p(95)<1000'],
     link_delete_duration: ['p(95)<1000'],
-
     operation_errors: ['rate<0.01'],
   },
 };
 
 export default function () {
-  /*
-   * 1. LIST
-   */
-  let res = http.get(`${BASE_URL}/api/links`, {
-    tags: {
-      name: 'GET /api/links',
-    },
+  let res = http.get(`${BASE_URL}/api/links?limit=50`, {
+    tags: { name: 'GET /api/links' },
   });
 
   listDuration.add(res.timings.duration);
@@ -49,36 +40,22 @@ export default function () {
   const listOk = check(res, {
     'LIST: status 200': (r) => r.status === 200,
     'LIST: valid JSON': (r) => {
-      try {
-        return Array.isArray(r.json());
-      } catch {
-        return false;
-      }
+      try { return Array.isArray(r.json()); } catch { return false; }
     },
   });
 
-  if (!listOk) {
-    operationErrors.add(1);
-  }
+  if (!listOk) operationErrors.add(1);
 
-  /*
-   * 2. CREATE
-   */
-  const destinationUrl =
-    `https://example.com/k6-vu-${__VU}-iter-${__ITER}`;
+  const destinationUrl = `https://example.com/k6-vu-${__VU}-iter-${__ITER}`;
 
-  const payload = JSON.stringify({
-    destinationUrl,
-  });
-
-  res = http.post(`${BASE_URL}/api/links`, payload, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    tags: {
-      name: 'POST /api/links',
-    },
-  });
+  res = http.post(
+    `${BASE_URL}/api/links`,
+    JSON.stringify({ destinationUrl }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+      tags: { name: 'POST /api/links' },
+    }
+  );
 
   createDuration.add(res.timings.duration);
 
@@ -87,55 +64,32 @@ export default function () {
   const createOk = check(res, {
     'CREATE: status 201': (r) => r.status === 201,
     'CREATE: returns short code': (r) => {
-      try {
-        return Boolean(r.json('code'));
-      } catch {
-        return false;
-      }
+      try { return Boolean(r.json('code')); } catch { return false; }
     },
   });
 
-  if (createOk) {
-    created = res.json();
-  } else {
-    operationErrors.add(1);
-  }
+  if (createOk) created = res.json();
+  else operationErrors.add(1);
 
-  /*
-   * 3. REDIRECT
-   *
-   * Don't follow the redirect.
-   * We only want to measure Linkly's 302 response.
-   */
-  if (created && created.code) {
+  if (created?.code) {
     res = http.get(`${BASE_URL}/${created.code}`, {
       redirects: 0,
-      tags: {
-        name: 'GET /:code',
-      },
+      tags: { name: 'GET /:code' },
     });
 
     redirectDuration.add(res.timings.duration);
 
     const redirectOk = check(res, {
       'REDIRECT: status 302': (r) => r.status === 302,
-      'REDIRECT: correct Location': (r) =>
-        r.headers.Location === destinationUrl,
+      'REDIRECT: correct Location': (r) => r.headers.Location === destinationUrl,
     });
 
-    if (!redirectOk) {
-      operationErrors.add(1);
-    }
+    if (!redirectOk) operationErrors.add(1);
   }
 
-  /*
-   * 4. DELETE
-   */
-  if (created && created.id) {
+  if (created?.id) {
     res = http.del(`${BASE_URL}/api/links/${created.id}`, {
-      tags: {
-        name: 'DELETE /api/links/:id',
-      },
+      tags: { name: 'DELETE /api/links/:id' },
     });
 
     deleteDuration.add(res.timings.duration);
@@ -144,14 +98,8 @@ export default function () {
       'DELETE: status 200': (r) => r.status === 200,
     });
 
-    if (!deleteOk) {
-      operationErrors.add(1);
-    }
+    if (!deleteOk) operationErrors.add(1);
   }
 
-  /*
-   * Small pause so each VU behaves more like a user
-   * rather than an infinite tight loop.
-   */
   sleep(0.1);
 }
